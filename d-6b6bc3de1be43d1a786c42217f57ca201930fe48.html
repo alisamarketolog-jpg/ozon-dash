@@ -1,0 +1,319 @@
+<!doctype html>
+<title>Дашборд Petextra</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root {
+  --bg: #f3f6f6;
+  --surface: #ffffff;
+  --surface-alt: #eaf0ef;
+  --border: #dbe4e2;
+  --text: #16211e;
+  --text-muted: #5c6f6a;
+  --accent: #2f6f5e;
+  --accent-soft: #dcece6;
+  --good: #2f8f5b;
+  --warning: #b8720a;
+  --critical: #c3423f;
+  --shadow: 0 1px 2px rgba(22,33,30,.06), 0 8px 24px -16px rgba(22,33,30,.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1614;
+    --surface: #16201d;
+    --surface-alt: #1c2723;
+    --border: #2a3733;
+    --text: #e7efec;
+    --text-muted: #92a49e;
+    --accent: #55b99a;
+    --accent-soft: #1c332c;
+    --good: #55b99a;
+    --warning: #dba449;
+    --critical: #e2716d;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1614;
+  --surface: #16201d;
+  --surface-alt: #1c2723;
+  --border: #2a3733;
+  --text: #e7efec;
+  --text-muted: #92a49e;
+  --accent: #55b99a;
+  --accent-soft: #1c332c;
+  --good: #55b99a;
+  --warning: #dba449;
+  --critical: #e2716d;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif;
+  padding: 28px 24px 64px;
+}
+h1, h2, h3 { font-family: "Manrope", sans-serif; text-wrap: balance; margin: 0; }
+.num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-muted); }
+.wrap { max-width: 1180px; margin: 0 auto; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+header.top h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.01em; }
+.subtitle { color: var(--text-muted); font-size: .92rem; margin-top: 2px; }
+
+.health-strip { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 16px; box-shadow: var(--shadow); font-size: .88rem; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+.dot-ok { background: var(--good); }
+.dot-warn { background: var(--warning); }
+.dot-crit { background: var(--critical); }
+.pill { padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+.pill-ok { background: var(--accent-soft); color: var(--accent); }
+.pill-crit { background: color-mix(in srgb, var(--critical) 18%, transparent); color: var(--critical); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; margin: 20px 0 28px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;
+  box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 6px; }
+.kpi-label { font-size: .78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.kpi-value { font-family: "IBM Plex Mono", monospace; font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kpi-trend { font-size: .8rem; font-weight: 600; }
+.trend-up { color: var(--good); }
+.trend-down { color: var(--critical); }
+.trend-flat { color: var(--text-muted); }
+
+section { margin-bottom: 28px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; gap: 8px; flex-wrap: wrap; }
+.section-head h2 { font-size: 1.05rem; font-weight: 700; }
+.section-head .muted { font-size: .82rem; }
+
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+.cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
+@media (max-width: 820px) { .cols-2, .cols-3 { grid-template-columns: 1fr; } }
+
+.chart { width: 100%; height: auto; }
+.chart-grid { stroke: var(--border); stroke-width: 1; }
+.chart-axis { fill: var(--text-muted); font-size: 10px; font-family: "IBM Plex Mono", monospace; }
+.chart-area { fill: var(--accent-soft); }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot { fill: var(--accent); }
+
+.bar-row { display: grid; grid-template-columns: 108px 1fr auto; align-items: center; gap: 10px; padding: 5px 0; font-size: .86rem; }
+.bar-label { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { background: var(--surface-alt); border-radius: 6px; height: 8px; overflow: hidden; }
+.bar-fill { background: var(--accent); height: 100%; border-radius: 6px; }
+.bar-fill.pos { background: var(--good); }
+.bar-fill.neg { background: var(--critical); }
+.bar-value { font-size: .82rem; min-width: 74px; text-align: right; }
+.pos { color: var(--good); }
+.neg { color: var(--critical); }
+
+.funnel-stage { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 12px; padding: 4px 0; }
+.funnel-label { font-size: .86rem; font-weight: 600; }
+.funnel-track { background: var(--surface-alt); border-radius: 8px; height: 26px; overflow: hidden; }
+.funnel-fill { background: var(--accent); height: 100%; border-radius: 8px; min-width: 2px; transition: width .2s; }
+.funnel-value { font-size: .9rem; font-weight: 600; min-width: 88px; text-align: right; }
+.funnel-conv { display: grid; grid-template-columns: 96px 1fr auto; gap: 12px; padding: 2px 0 2px; }
+.funnel-conv span { grid-column: 2; color: var(--text-muted); font-size: .78rem; padding-left: 4px;
+  border-left: 2px dashed var(--border); margin-left: 14px; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+.data-table th { text-align: left; color: var(--text-muted); font-weight: 600; font-size: .76rem; text-transform: uppercase;
+  letter-spacing: .03em; border-bottom: 1px solid var(--border); padding: 6px 8px; }
+.data-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); }
+.data-table tr:last-child td { border-bottom: none; }
+.cell-name { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.table-wrap { overflow-x: auto; }
+/* Артикул (первая колонка) остаётся на месте при горизонтальной прокрутке таблицы —
+   чтобы при просмотре с телефона (Mini App) не терялось «какой это товар», пока
+   листаешь вбок к нужным цифрам. */
+.data-table .cell-name { position: sticky; left: 0; background: var(--surface); }
+/* На узком экране «Цена сейчас» показывает только то, что нужно на глаз без
+   прокрутки: артикул, наша цена, цена покупателю, статус — остальные колонки
+   (линейка/₽ за ламистер/СПП/ориентиры) остаются в десктопной версии и
+   доступны прокруткой на широком экране. */
+.col-extra-hint { display: none; }
+@media (max-width: 720px) {
+  .price-table .col-extra { display: none; }
+  .col-extra-hint { display: block; }
+}
+
+.chip { display: inline-block; background: var(--surface-alt); color: var(--text); border-radius: 999px; padding: 3px 10px;
+  font-size: .8rem; margin: 2px 6px 2px 0; }
+
+.status-chip { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+.status-critical { background: color-mix(in srgb, var(--critical) 18%, transparent); color: var(--critical); }
+.status-warning { background: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning); }
+.status-info { background: var(--accent-soft); color: var(--accent); }
+.status-ok { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.status-unknown { background: var(--surface-alt); color: var(--text-muted); }
+
+.footnote { margin-top: 36px; font-size: .8rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 14px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Petextra — сводка кабинета</h1>
+      <div class="subtitle">на 25.09.2026, собрано 25.09 16:35 · тестовая сборка Д2, не автообновляется</div>
+    </div>
+    <div class="health-strip">
+      <span class="dot dot-ok" title="finance: жив"></span><span class="dot dot-ok" title="funnel: жив"></span><span class="dot dot-crit" title="performance: не собран"></span><span class="dot dot-ok" title="postings: жив"></span><span class="dot dot-ok" title="prices: жив"></span><span class="dot dot-ok" title="products: жив"></span><span class="dot dot-ok" title="promos: жив"></span><span class="dot dot-ok" title="returns: жив"></span><span class="dot dot-ok" title="site_price: жив"></span><span class="dot dot-ok" title="stocks: жив"></span><span class="dot dot-ok" title="supply_reference: жив"></span><span class="dot dot-ok" title="turnover: жив"></span>
+      <span class="pill pill-ok">стоп-кран снят</span>
+      <span class="muted">локов: 0 · операций: 0</span>
+    </div>
+  </header>
+
+  <div class="kpi-grid">
+    <div class="kpi"><span class="kpi-label">Заказы, неделя</span>
+      <span class="kpi-value">406 042 ₽</span>
+      <span class="kpi-trend trend-down">-5% к прошлой · 153 шт</span></div>
+    <div class="kpi"><span class="kpi-label">% выкупа</span>
+      <span class="kpi-value">50.3%</span>
+      <span class="kpi-trend trend-down">-47% к прошлой</span></div>
+    <div class="kpi"><span class="kpi-label">Возвраты/отмены</span>
+      <span class="kpi-value">4.6%</span>
+      <span class="kpi-trend trend-up">+142% к прошлой</span></div>
+    <div class="kpi"><span class="kpi-label">ДРР по API</span>
+      <span class="kpi-value">1.2%</span>
+      <span class="kpi-trend trend-down">-25% к прошлой</span></div>
+    <div class="kpi"><span class="kpi-label">ДРР общий (выгрузка)</span>
+      <span class="kpi-value">—</span>
+      <span class="kpi-trend muted">на 10.09 — все подтипы рекламы</span></div>
+    <div class="kpi"><span class="kpi-label">ROI кабинета, факт</span>
+      <span class="kpi-value pos">+163 438 ₽</span>
+      <span class="kpi-trend muted">за 19.09–25.09</span></div>
+  </div>
+
+  <section>
+    <div class="section-head"><h2>Цена сейчас</h2>
+      <span class="muted">последний собранный срез, целиком и за ламистер — против потолка/минимума (D144/D156)</span></div>
+    <div class="panel table-wrap"><table class="data-table price-table"><thead><tr>
+      <th>Артикул</th><th class="col-extra">Линейка</th><th class="num">Наша цена</th><th class="num col-extra">₽/ламистер</th>
+      <th class="num">Цена покупателю</th><th class="num col-extra">₽/ламистер</th>
+      <th class="num col-extra" title="1 - цена покупателю / наша цена, D188">СПП</th>
+      <th class="num col-extra">До скидок (мин.)</th><th class="num col-extra">Потолок (покуп.)</th><th class="num col-extra">Минимум (наша)</th>
+      <th>Статус</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="5473224089">11-100-steril-ragout-4</td><td class="col-extra">для стерилизованных</td><td class="num ">1 265 ₽</td><td class="num muted col-extra">316.25 ₽</td><td class="num neg">684 ₽</td><td class="num muted col-extra">171.00 ₽</td><td class="num muted col-extra">45.9%</td><td class="num muted col-extra">980 ₽</td><td class="num muted col-extra">636 ₽</td><td class="num muted col-extra">872 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="5539094639">11-100-steril-ragout-6</td><td class="col-extra">для стерилизованных</td><td class="num ">1 806 ₽</td><td class="num muted col-extra">301.00 ₽</td><td class="num neg">1 058 ₽</td><td class="num muted col-extra">176.33 ₽</td><td class="num muted col-extra">41.4%</td><td class="num muted col-extra">1 470 ₽</td><td class="num muted col-extra">954 ₽</td><td class="num muted col-extra">1 308 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="5538885370">12-100-steril-roast-6</td><td class="col-extra">для стерилизованных</td><td class="num ">1 807 ₽</td><td class="num muted col-extra">301.17 ₽</td><td class="num neg">1 059 ₽</td><td class="num muted col-extra">176.50 ₽</td><td class="num muted col-extra">41.4%</td><td class="num muted col-extra">1 470 ₽</td><td class="num muted col-extra">954 ₽</td><td class="num muted col-extra">1 308 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="5473224552">13-100-steril-turkey-4</td><td class="col-extra">для стерилизованных</td><td class="num ">1 254 ₽</td><td class="num muted col-extra">313.50 ₽</td><td class="num neg">677 ₽</td><td class="num muted col-extra">169.25 ₽</td><td class="num muted col-extra">46.0%</td><td class="num muted col-extra">980 ₽</td><td class="num muted col-extra">636 ₽</td><td class="num muted col-extra">872 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="5539037513">13-100-steril-turkey-6</td><td class="col-extra">для стерилизованных</td><td class="num ">1 807 ₽</td><td class="num muted col-extra">301.17 ₽</td><td class="num neg">1 059 ₽</td><td class="num muted col-extra">176.50 ₽</td><td class="num muted col-extra">41.4%</td><td class="num muted col-extra">1 470 ₽</td><td class="num muted col-extra">954 ₽</td><td class="num muted col-extra">1 308 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="2712303613">14-100-mix-steril</td><td class="col-extra">для стерилизованных</td><td class="num ">4 677 ₽</td><td class="num muted col-extra">292.31 ₽</td><td class="num neg">2 540 ₽</td><td class="num muted col-extra">158.75 ₽</td><td class="num muted col-extra">45.7%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="951456455">8-100-01-6flv</td><td class="col-extra">обычная</td><td class="num ">4 505 ₽</td><td class="num muted col-extra">281.56 ₽</td><td class="num neg">2 433 ₽</td><td class="num muted col-extra">152.06 ₽</td><td class="num muted col-extra">46.0%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-warning">выше потолка</span></td></tr><tr><td class="cell-name" title="809092235">1-100-01-rbt-16</td><td class="col-extra">обычная</td><td class="num ">4 688 ₽</td><td class="num muted col-extra">293.00 ₽</td><td class="num ">2 074 ₽</td><td class="num muted col-extra">129.62 ₽</td><td class="num muted col-extra">55.8%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="814585704">1-100-01-rbt-4</td><td class="col-extra">обычная</td><td class="num ">1 002 ₽</td><td class="num muted col-extra">250.50 ₽</td><td class="num ">568 ₽</td><td class="num muted col-extra">142.00 ₽</td><td class="num muted col-extra">43.3%</td><td class="num muted col-extra">948 ₽</td><td class="num muted col-extra">596 ₽</td><td class="num muted col-extra">840 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5538622134">1-100-01-rbt-6</td><td class="col-extra">обычная</td><td class="num ">1 695 ₽</td><td class="num muted col-extra">282.50 ₽</td><td class="num ">890 ₽</td><td class="num muted col-extra">148.33 ₽</td><td class="num muted col-extra">47.5%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1857835281">10-100-kit-mix-2-16</td><td class="col-extra">для котят</td><td class="num ">4 525 ₽</td><td class="num muted col-extra">282.81 ₽</td><td class="num ">2 400 ₽</td><td class="num muted col-extra">150.00 ₽</td><td class="num muted col-extra">47.0%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="2712255410">11-100-steril-ragout-16</td><td class="col-extra">для стерилизованных</td><td class="num ">4 525 ₽</td><td class="num muted col-extra">282.81 ₽</td><td class="num ">2 400 ₽</td><td class="num muted col-extra">150.00 ₽</td><td class="num muted col-extra">47.0%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1629499468">11-16-mix1</td><td class="col-extra">обычная</td><td class="num ">4 570 ₽</td><td class="num muted col-extra">285.62 ₽</td><td class="num ">2 319 ₽</td><td class="num muted col-extra">144.94 ₽</td><td class="num muted col-extra">49.3%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1629504059">11-16-mix2</td><td class="col-extra">обычная</td><td class="num ">4 687 ₽</td><td class="num muted col-extra">292.94 ₽</td><td class="num ">2 074 ₽</td><td class="num muted col-extra">129.62 ₽</td><td class="num muted col-extra">55.7%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1629507138">11-16-mix3</td><td class="col-extra">обычная</td><td class="num ">4 686 ₽</td><td class="num muted col-extra">292.88 ₽</td><td class="num ">2 319 ₽</td><td class="num muted col-extra">144.94 ₽</td><td class="num muted col-extra">50.5%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1629509134">11-16-mix4</td><td class="col-extra">обычная</td><td class="num ">4 687 ₽</td><td class="num muted col-extra">292.94 ₽</td><td class="num ">2 074 ₽</td><td class="num muted col-extra">129.62 ₽</td><td class="num muted col-extra">55.7%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="2712329725">12-100-steril-roast-16</td><td class="col-extra">для стерилизованных</td><td class="num ">4 832 ₽</td><td class="num muted col-extra">302.00 ₽</td><td class="num ">2 234 ₽</td><td class="num muted col-extra">139.62 ₽</td><td class="num muted col-extra">53.8%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5473224593">12-100-steril-roast-4</td><td class="col-extra">для стерилизованных</td><td class="num ">1 134 ₽</td><td class="num muted col-extra">283.50 ₽</td><td class="num ">602 ₽</td><td class="num muted col-extra">150.50 ₽</td><td class="num muted col-extra">46.9%</td><td class="num muted col-extra">980 ₽</td><td class="num muted col-extra">636 ₽</td><td class="num muted col-extra">872 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="2712295187">13-100-steril-turkey-16</td><td class="col-extra">для стерилизованных</td><td class="num ">4 526 ₽</td><td class="num muted col-extra">282.88 ₽</td><td class="num ">2 401 ₽</td><td class="num muted col-extra">150.06 ₽</td><td class="num muted col-extra">47.0%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="2712364398">14-100-mix-steril-6</td><td class="col-extra">для стерилизованных</td><td class="num ">1 534 ₽</td><td class="num muted col-extra">255.67 ₽</td><td class="num ">832 ₽</td><td class="num muted col-extra">138.67 ₽</td><td class="num muted col-extra">45.8%</td><td class="num muted col-extra">1 470 ₽</td><td class="num muted col-extra">954 ₽</td><td class="num muted col-extra">1 308 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="809035796">2-100-01-f-ch-16</td><td class="col-extra">обычная</td><td class="num ">4 378 ₽</td><td class="num muted col-extra">273.62 ₽</td><td class="num ">2 254 ₽</td><td class="num muted col-extra">140.88 ₽</td><td class="num muted col-extra">48.5%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="814585707">2-100-01-f-ch-4</td><td class="col-extra">обычная</td><td class="num ">1 002 ₽</td><td class="num muted col-extra">250.50 ₽</td><td class="num ">568 ₽</td><td class="num muted col-extra">142.00 ₽</td><td class="num muted col-extra">43.3%</td><td class="num muted col-extra">948 ₽</td><td class="num muted col-extra">596 ₽</td><td class="num muted col-extra">840 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5538520152">2-100-01-f-ch-6</td><td class="col-extra">обычная</td><td class="num ">1 679 ₽</td><td class="num muted col-extra">279.83 ₽</td><td class="num ">891 ₽</td><td class="num muted col-extra">148.50 ₽</td><td class="num muted col-extra">46.9%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="809025093">3-100-01-fish-16</td><td class="col-extra">обычная</td><td class="num ">4 687 ₽</td><td class="num muted col-extra">292.94 ₽</td><td class="num ">2 074 ₽</td><td class="num muted col-extra">129.62 ₽</td><td class="num muted col-extra">55.7%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="814734869">3-100-01-fish-4</td><td class="col-extra">обычная</td><td class="num ">1 002 ₽</td><td class="num muted col-extra">250.50 ₽</td><td class="num ">568 ₽</td><td class="num muted col-extra">142.00 ₽</td><td class="num muted col-extra">43.3%</td><td class="num muted col-extra">948 ₽</td><td class="num muted col-extra">596 ₽</td><td class="num muted col-extra">840 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5538465662">3-100-01-fish-6</td><td class="col-extra">обычная</td><td class="num ">1 531 ₽</td><td class="num muted col-extra">255.17 ₽</td><td class="num ">840 ₽</td><td class="num muted col-extra">140.00 ₽</td><td class="num muted col-extra">45.1%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="809221582">4-100-01-lamb-16</td><td class="col-extra">обычная</td><td class="num ">4 375 ₽</td><td class="num muted col-extra">273.44 ₽</td><td class="num ">2 246 ₽</td><td class="num muted col-extra">140.38 ₽</td><td class="num muted col-extra">48.7%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="814764800">4-100-01-lamb-4</td><td class="col-extra">обычная</td><td class="num ">1 002 ₽</td><td class="num muted col-extra">250.50 ₽</td><td class="num ">568 ₽</td><td class="num muted col-extra">142.00 ₽</td><td class="num muted col-extra">43.3%</td><td class="num muted col-extra">948 ₽</td><td class="num muted col-extra">596 ₽</td><td class="num muted col-extra">840 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5538581544">4-100-01-lamb-6</td><td class="col-extra">обычная</td><td class="num ">1 676 ₽</td><td class="num muted col-extra">279.33 ₽</td><td class="num ">891 ₽</td><td class="num muted col-extra">148.50 ₽</td><td class="num muted col-extra">46.8%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="948413553">5-100-01-6flv</td><td class="col-extra">обычная</td><td class="num ">1 521 ₽</td><td class="num muted col-extra">253.50 ₽</td><td class="num ">866 ₽</td><td class="num muted col-extra">144.33 ₽</td><td class="num muted col-extra">43.1%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="951440153">6-100-01-beef - 16</td><td class="col-extra">обычная</td><td class="num ">4 690 ₽</td><td class="num muted col-extra">293.12 ₽</td><td class="num ">2 073 ₽</td><td class="num muted col-extra">129.56 ₽</td><td class="num muted col-extra">55.8%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="951434103">6-100-01-beef-4</td><td class="col-extra">обычная</td><td class="num ">1 002 ₽</td><td class="num muted col-extra">250.50 ₽</td><td class="num ">568 ₽</td><td class="num muted col-extra">142.00 ₽</td><td class="num muted col-extra">43.3%</td><td class="num muted col-extra">948 ₽</td><td class="num muted col-extra">596 ₽</td><td class="num muted col-extra">840 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5538769691">6-100-01-beef-6</td><td class="col-extra">обычная</td><td class="num ">1 695 ₽</td><td class="num muted col-extra">282.50 ₽</td><td class="num ">890 ₽</td><td class="num muted col-extra">148.33 ₽</td><td class="num muted col-extra">47.5%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="951421871">7-100-01-turkey-16</td><td class="col-extra">обычная</td><td class="num ">4 487 ₽</td><td class="num muted col-extra">280.44 ₽</td><td class="num ">2 279 ₽</td><td class="num muted col-extra">142.44 ₽</td><td class="num muted col-extra">49.2%</td><td class="num muted col-extra">3 792 ₽</td><td class="num muted col-extra">2 320 ₽</td><td class="num muted col-extra">3 360 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="951415630">7-100-01-turkey-4</td><td class="col-extra">обычная</td><td class="num ">1 002 ₽</td><td class="num muted col-extra">250.50 ₽</td><td class="num ">568 ₽</td><td class="num muted col-extra">142.00 ₽</td><td class="num muted col-extra">43.3%</td><td class="num muted col-extra">948 ₽</td><td class="num muted col-extra">596 ₽</td><td class="num muted col-extra">840 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5538689464">7-100-01-turkey-6</td><td class="col-extra">обычная</td><td class="num ">1 532 ₽</td><td class="num muted col-extra">255.33 ₽</td><td class="num ">840 ₽</td><td class="num muted col-extra">140.00 ₽</td><td class="num muted col-extra">45.2%</td><td class="num muted col-extra">1 422 ₽</td><td class="num muted col-extra">894 ₽</td><td class="num muted col-extra">1 260 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1722143708">9-100-kit01-turkey-16</td><td class="col-extra">для котят</td><td class="num ">4 832 ₽</td><td class="num muted col-extra">302.00 ₽</td><td class="num ">2 234 ₽</td><td class="num muted col-extra">139.62 ₽</td><td class="num muted col-extra">53.8%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5473223404">9-100-kit01-turkey-4</td><td class="col-extra">для котят</td><td class="num ">1 265 ₽</td><td class="num muted col-extra">316.25 ₽</td><td class="num ">628 ₽</td><td class="num muted col-extra">157.00 ₽</td><td class="num muted col-extra">50.4%</td><td class="num muted col-extra">980 ₽</td><td class="num muted col-extra">636 ₽</td><td class="num muted col-extra">872 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1747584033">9-100-kit01-turkey-6</td><td class="col-extra">для котят</td><td class="num ">1 673 ₽</td><td class="num muted col-extra">278.83 ₽</td><td class="num ">954 ₽</td><td class="num muted col-extra">159.00 ₽</td><td class="num muted col-extra">43.0%</td><td class="num muted col-extra">1 470 ₽</td><td class="num muted col-extra">954 ₽</td><td class="num muted col-extra">1 308 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1722143616">9-100-kit02-chiken-16</td><td class="col-extra">для котят</td><td class="num ">4 526 ₽</td><td class="num muted col-extra">282.88 ₽</td><td class="num ">2 400 ₽</td><td class="num muted col-extra">150.00 ₽</td><td class="num muted col-extra">47.0%</td><td class="num muted col-extra">3 920 ₽</td><td class="num muted col-extra">2 480 ₽</td><td class="num muted col-extra">3 488 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="5473224348">9-100-kit02-chiken-4</td><td class="col-extra">для котят</td><td class="num ">1 265 ₽</td><td class="num muted col-extra">316.25 ₽</td><td class="num ">628 ₽</td><td class="num muted col-extra">157.00 ₽</td><td class="num muted col-extra">50.4%</td><td class="num muted col-extra">980 ₽</td><td class="num muted col-extra">636 ₽</td><td class="num muted col-extra">872 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr><tr><td class="cell-name" title="1725057727">9-100-kit02-chiken-6</td><td class="col-extra">для котят</td><td class="num ">1 549 ₽</td><td class="num muted col-extra">258.17 ₽</td><td class="num ">913 ₽</td><td class="num muted col-extra">152.17 ₽</td><td class="num muted col-extra">41.1%</td><td class="num muted col-extra">1 470 ₽</td><td class="num muted col-extra">954 ₽</td><td class="num muted col-extra">1 308 ₽</td><td><span class="status-chip status-ok">норма</span></td></tr></tbody></table>
+    <p class="muted col-extra-hint" style="margin-top:8px">На телефоне показаны только артикул/цена/статус — линейка, ₽/ламистер, СПП и ориентиры видны на широком экране.</p>
+    <p class="muted" style="margin-top:8px">Правила владельца (07.09.2026): «наша цена» (price.price) не может быть НИЖЕ
+    минимума никогда — критично с первого дня; у самой границы минимума (в пределах 5%
+    сверху — рабочая оценка, не нарушение само по себе) можно быть не дольше 2 суток подряд;
+    «цена покупателю» (со СПП, домен site_price, D158) не должна быть ВЫШЕ потолка. «—» в «цена покупателю» —
+    домен site_price ещё не собирался по этому SKU (заведён 07.09.2026, не в ежедневном расписании).</p></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Динамика заказов</h2><span class="muted">последние 14 суток, ₽/сутки</span></div>
+    <div class="panel"><svg viewBox="0 0 620 160" class="chart" role="img" aria-label="Динамика заказов по суткам">
+      <line x1="40" y1="132.0" x2="608" y2="132.0" class="chart-grid"/><text x="34" y="135.0" text-anchor="end" class="chart-axis">8 653</text><line x1="40" y1="74.0" x2="608" y2="74.0" class="chart-grid"/><text x="34" y="77.0" text-anchor="end" class="chart-axis">66 328</text><line x1="40" y1="16.0" x2="608" y2="16.0" class="chart-grid"/><text x="34" y="19.0" text-anchor="end" class="chart-axis">124 002</text>
+      <path d="M40.0,72.0 L83.7,103.3 L127.4,91.2 L171.1,108.7 L214.8,50.3 L258.5,73.2 L302.2,55.2 L345.8,69.4 L389.5,16.0 L433.2,82.2 L476.9,76.2 L520.6,86.2 L564.3,114.6 L608.0,132.0 L608.0,132.0 L40.0,132.0 Z" class="chart-area"/>
+      <path d="M40.0,72.0 L83.7,103.3 L127.4,91.2 L171.1,108.7 L214.8,50.3 L258.5,73.2 L302.2,55.2 L345.8,69.4 L389.5,16.0 L433.2,82.2 L476.9,76.2 L520.6,86.2 L564.3,114.6 L608.0,132.0" class="chart-line"/>
+      <circle cx="608.0" cy="132.0" r="4" class="chart-dot"/>
+      <text x="40.0" y="154" text-anchor="middle" class="chart-axis">12.сен</text><text x="127.4" y="154" text-anchor="middle" class="chart-axis">14.сен</text><text x="214.8" y="154" text-anchor="middle" class="chart-axis">16.сен</text><text x="302.2" y="154" text-anchor="middle" class="chart-axis">18.сен</text><text x="389.5" y="154" text-anchor="middle" class="chart-axis">20.сен</text><text x="476.9" y="154" text-anchor="middle" class="chart-axis">22.сен</text><text x="564.3" y="154" text-anchor="middle" class="chart-axis">24.сен</text><text x="608.0" y="154" text-anchor="middle" class="chart-axis">25.сен</text>
+    </svg></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Воронка — путь покупателя</h2>
+      <span class="muted">кабинет целиком, показы → корзина → заказ → выкуп</span></div>
+    <div class="panel"><div class="funnel-stage"><span class="funnel-label">Показы</span><div class="funnel-track"><div class="funnel-fill" style="width:100%"></div></div><span class="funnel-value">178 198</span></div><div class="funnel-conv"><span>↓ 0.5% дошло дальше</span></div><div class="funnel-stage"><span class="funnel-label">Корзина</span><div class="funnel-track"><div class="funnel-fill" style="width:1%"></div></div><span class="funnel-value">969</span></div><div class="funnel-conv"><span>↓ 60.2% дошло дальше</span></div><div class="funnel-stage"><span class="funnel-label">Заказы</span><div class="funnel-track"><div class="funnel-fill" style="width:1%"></div></div><span class="funnel-value">583</span></div><div class="funnel-conv"><span>↓ 96.9% дошло дальше</span></div><div class="funnel-stage"><span class="funnel-label">Выкуп</span><div class="funnel-track"><div class="funnel-fill" style="width:1%"></div></div><span class="funnel-value">565</span></div><p class="muted" style="margin-top:10px">Период 10.08–10.09 (последняя выгрузка на каждый из 46 SKU, D115) · отменено 18 · возвращено 0</p></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Логистика — зоны остатка</h2>
+      <span class="muted">на 25.09.2026</span></div>
+    <div class="panel"><div class="bar-row"><span class="bar-label">неизвестно</span><div class="bar-track"><div class="bar-fill" style="width:55%"></div></div><span class="bar-value">23</span></div><div class="bar-row"><span class="bar-label">не FBO</span><div class="bar-track"><div class="bar-fill" style="width:45%"></div></div><span class="bar-value">19</span></div>
+      <p class="muted" style="margin-top:10px">нужен аналог: 0 · не FBO: 19 · в акции сегодня: 42</p></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Воронка — диагноз по SKU</h2>
+      <span class="muted">слабый этап на 10.09.2026, необъяснённые — первыми</span></div>
+    <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Артикул</th><th>Слабый этап</th><th>Причина</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="1330984082">1330984082</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1419798082">1419798082</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1629499468">11-16-mix1</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1629504059">11-16-mix2</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1629507138">11-16-mix3</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1629509134">11-16-mix4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1722143616">9-100-kit02-chiken-16</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1722143708">9-100-kit01-turkey-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1725057727">9-100-kit02-chiken-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1747584033">9-100-kit01-turkey-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1790739788">1790739788</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="1857835281">10-100-kit-mix-2-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="2712255410">11-100-steril-ragout-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="2712295187">13-100-steril-turkey-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="2712303613">14-100-mix-steril</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="2712329725">12-100-steril-roast-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="2712364398">14-100-mix-steril-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5473223404">9-100-kit01-turkey-4</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5473224089">11-100-steril-ragout-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5473224348">9-100-kit02-chiken-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5473224552">13-100-steril-turkey-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5473224593">12-100-steril-roast-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538465662">3-100-01-fish-6</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538520152">2-100-01-f-ch-6</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538581544">4-100-01-lamb-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538622134">1-100-01-rbt-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538689464">7-100-01-turkey-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538769691">6-100-01-beef-6</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5538885370">12-100-steril-roast-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5539037513">13-100-steril-turkey-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="5539094639">11-100-steril-ragout-6</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="809025093">3-100-01-fish-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="809035796">2-100-01-f-ch-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="809092235">1-100-01-rbt-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="809221582">4-100-01-lamb-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="814585704">1-100-01-rbt-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="814585707">2-100-01-f-ch-4</td><td>заказ_в_выкуп <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="814608379">814608379</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="814734869">3-100-01-fish-4</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="814764800">4-100-01-lamb-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="948413553">5-100-01-6flv</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="951415630">7-100-01-turkey-4</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="951421871">7-100-01-turkey-16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="951434103">6-100-01-beef-4</td><td>корзина_в_заказ <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="951440153">6-100-01-beef - 16</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr><tr><td class="cell-name" title="951456455">8-100-01-6flv</td><td>показы_в_корзину <span class="status-chip status-warning">устарел</span></td><td><span class="muted">не объяснено</span></td></tr></tbody></table></div>
+  </section>
+
+  <section class="cols-2">
+    <div>
+      <div class="section-head"><h2>Топ роста, ₽/неделя</h2></div>
+      <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Артикул</th><th class="num">Эта неделя</th><th class="num">Прошлая</th><th class="num">Δ</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="948413553">5-100-01-6flv</td><td class="num">77 234 ₽</td><td class="num">47 840 ₽</td><td class="num pos">+29 394 ₽</td></tr><tr><td class="cell-name" title="809221582">4-100-01-lamb-16</td><td class="num">41 379 ₽</td><td class="num">14 334 ₽</td><td class="num pos">+27 045 ₽</td></tr><tr><td class="cell-name" title="1629504059">11-16-mix2</td><td class="num">40 777 ₽</td><td class="num">15 228 ₽</td><td class="num pos">+25 549 ₽</td></tr><tr><td class="cell-name" title="809092235">1-100-01-rbt-16</td><td class="num">18 428 ₽</td><td class="num">3 650 ₽</td><td class="num pos">+14 778 ₽</td></tr><tr><td class="cell-name" title="809035796">2-100-01-f-ch-16</td><td class="num">15 882 ₽</td><td class="num">6 889 ₽</td><td class="num pos">+8 993 ₽</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <div class="section-head"><h2>Топ падения, ₽/неделя</h2></div>
+      <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Артикул</th><th class="num">Эта неделя</th><th class="num">Прошлая</th><th class="num">Δ</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="951456455">8-100-01-6flv</td><td class="num">86 892 ₽</td><td class="num">176 723 ₽</td><td class="num neg">-89 831 ₽</td></tr><tr><td class="cell-name" title="951440153">6-100-01-beef - 16</td><td class="num">7 653 ₽</td><td class="num">21 535 ₽</td><td class="num neg">-13 882 ₽</td></tr><tr><td class="cell-name" title="2712295187">13-100-steril-turkey-16</td><td class="num">11 904 ₽</td><td class="num">21 460 ₽</td><td class="num neg">-9 556 ₽</td></tr><tr><td class="cell-name" title="1857835281">10-100-kit-mix-2-16</td><td class="num">0 ₽</td><td class="num">7 363 ₽</td><td class="num neg">-7 363 ₽</td></tr><tr><td class="cell-name" title="1722143708">9-100-kit01-turkey-16</td><td class="num">3 894 ₽</td><td class="num">11 129 ₽</td><td class="num neg">-7 235 ₽</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="cols-2">
+    <div>
+      <div class="section-head"><h2>Качество карточки</h2><span class="muted">выгрузка по 10.09.2026</span></div>
+      <div class="panel">
+        <p>средняя позиция в поиске: <b class="num">114.4</b> ·
+           рейтинг: <b class="num">—</b></p>
+        <p class="muted" style="margin:8px 0 4px">оценка цены площадкой:</p>
+        <span class="muted">нет данных</span>
+        <p class="muted" style="margin:14px 0 4px">худшая позиция в поиске:</p>
+        <table class="data-table"><thead><tr><th>Артикул</th><th class="num">Позиция</th></tr></thead>
+        <tbody><tr><td class="cell-name" title="2712329725">12-100-steril-roast-16</td><td class="num">228.24</td></tr><tr><td class="cell-name" title="809221582">4-100-01-lamb-16</td><td class="num">206.22</td></tr><tr><td class="cell-name" title="5473224552">13-100-steril-turkey-4</td><td class="num">192.52</td></tr><tr><td class="cell-name" title="1722143616">9-100-kit02-chiken-16</td><td class="num">190.81</td></tr><tr><td class="cell-name" title="2712303613">14-100-mix-steril</td><td class="num">189.76</td></tr></tbody></table>
+      </div>
+    </div>
+    <div>
+      <div class="section-head"><h2>Начисления по категориям</h2><span class="muted">эта неделя</span></div>
+      <div class="panel"><div class="bar-row"><span class="bar-label">Выручка от продажи</span><div class="bar-track"><div class="bar-fill pos" style="width:100%"></div></div><span class="bar-value num pos">+387 778 ₽</span></div><div class="bar-row"><span class="bar-label">Комиссия площадки</span><div class="bar-track"><div class="bar-fill neg" style="width:48%"></div></div><span class="bar-value num neg">-185 354 ₽</span></div><div class="bar-row"><span class="bar-label">Реклама и продвижение</span><div class="bar-track"><div class="bar-fill neg" style="width:4%"></div></div><span class="bar-value num neg">-14 991 ₽</span></div><div class="bar-row"><span class="bar-label">Логистика (доставка проданного)</span><div class="bar-track"><div class="bar-fill neg" style="width:4%"></div></div><span class="bar-value num neg">-14 807 ₽</span></div><div class="bar-row"><span class="bar-label">Поставка, склад, упаковка, кросс-докинг</span><div class="bar-track"><div class="bar-fill neg" style="width:1%"></div></div><span class="bar-value num neg">-4 505 ₽</span></div><div class="bar-row"><span class="bar-label">Эквайринг</span><div class="bar-track"><div class="bar-fill neg" style="width:1%"></div></div><span class="bar-value num neg">-3 300 ₽</span></div><div class="bar-row"><span class="bar-label">Компенсации и страхование</span><div class="bar-track"><div class="bar-fill neg" style="width:0%"></div></div><span class="bar-value num neg">-1 273 ₽</span></div><div class="bar-row"><span class="bar-label">Штрафы за качество/нарушения</span><div class="bar-track"><div class="bar-fill neg" style="width:0%"></div></div><span class="bar-value num neg">-95 ₽</span></div><div class="bar-row"><span class="bar-label">Возвраты и отмены</span><div class="bar-track"><div class="bar-fill neg" style="width:0%"></div></div><span class="bar-value num neg">-15 ₽</span></div></div>
+    </div>
+  </section>
+
+  <section class="cols-2">
+    <div>
+      <div class="section-head"><h2>Маржа по товару — лучшие</h2><span class="muted">факт-нетто: начисления минус оценка рекламы/налога</span></div>
+      <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Артикул</th><th class="num">До рекл./налога</th><th class="num">Реклама (оценка)</th>
+      <th class="num">Налог (оценка)</th><th class="num">Факт-нетто</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="951456455">8-100-01-6flv</td><td class="num muted">+51 944 ₽</td><td class="num muted">+1 043 ₽</td><td class="num muted">+5 214 ₽</td><td class="num pos">+45 688 ₽</td></tr><tr><td class="cell-name" title="948413553">5-100-01-6flv</td><td class="num muted">+28 477 ₽</td><td class="num muted">+927 ₽</td><td class="num muted">+4 634 ₽</td><td class="num pos">+22 916 ₽</td></tr><tr><td class="cell-name" title="809221582">4-100-01-lamb-16</td><td class="num muted">+17 446 ₽</td><td class="num muted">+497 ₽</td><td class="num muted">+2 483 ₽</td><td class="num pos">+14 467 ₽</td></tr><tr><td class="cell-name" title="1629504059">11-16-mix2</td><td class="num muted">+13 768 ₽</td><td class="num muted">+489 ₽</td><td class="num muted">+2 447 ₽</td><td class="num pos">+10 832 ₽</td></tr><tr><td class="cell-name" title="1629507138">11-16-mix3</td><td class="num muted">+11 531 ₽</td><td class="num muted">+149 ₽</td><td class="num muted">+744 ₽</td><td class="num pos">+10 639 ₽</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <div class="section-head"><h2>Маржа по товару — худшие</h2></div>
+      <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Артикул</th><th class="num">До рекл./налога</th><th class="num">Реклама (оценка)</th>
+      <th class="num">Налог (оценка)</th><th class="num">Факт-нетто</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="5473224552">13-100-steril-turkey-4</td><td class="num muted">-25 ₽</td><td class="num muted">+37 ₽</td><td class="num muted">+183 ₽</td><td class="num neg">-244 ₽</td></tr><tr><td class="cell-name" title="5473223404">9-100-kit01-turkey-4</td><td class="num muted">-11 ₽</td><td class="num muted">+36 ₽</td><td class="num muted">+178 ₽</td><td class="num neg">-225 ₽</td></tr><tr><td class="cell-name" title="5538689464">7-100-01-turkey-6</td><td class="num muted">-205 ₽</td><td class="num muted">0 ₽</td><td class="num muted">0 ₽</td><td class="num neg">-205 ₽</td></tr><tr><td class="cell-name" title="1725057727">9-100-kit02-chiken-6</td><td class="num muted">-14 ₽</td><td class="num muted">+18 ₽</td><td class="num muted">+89 ₽</td><td class="num neg">-121 ₽</td></tr><tr><td class="cell-name" title="5473224089">11-100-steril-ragout-4</td><td class="num muted">-4 ₽</td><td class="num muted">+13 ₽</td><td class="num muted">+63 ₽</td><td class="num neg">-80 ₽</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Маржа — план по товару</h2>
+      <span class="muted">цена сейчас минус комиссия/логистика (наши данные) минус реклама 5%/налог/себестоимость</span></div>
+    <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Артикул</th><th>Схема</th><th class="num">Цена</th><th class="num">Комиссия</th>
+      <th class="num">Логистика</th><th class="num">Реклама</th><th class="num">Налог</th><th class="num">Хранение</th>
+      <th class="num">Себестоимость</th><th class="num">Маржа (план)</th><th class="num">% маржи</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="2712364398">14-100-mix-steril-6</td><td>FBO</td><td class="num muted">1 534 ₽</td><td class="num muted">736 ₽</td><td class="num muted">197 ₽</td><td class="num muted">77 ₽</td><td class="num muted">92 ₽</td><td class="num muted">17 ₽</td><td class="num muted">286 ₽</td><td class="num pos">+128 ₽</td><td class="num pos">8.4%</td></tr><tr><td class="cell-name" title="948413553">5-100-01-6flv</td><td>FBO</td><td class="num muted">1 521 ₽</td><td class="num muted">730 ₽</td><td class="num muted">190 ₽</td><td class="num muted">76 ₽</td><td class="num muted">91 ₽</td><td class="num muted">17 ₽</td><td class="num muted">260 ₽</td><td class="num pos">+157 ₽</td><td class="num pos">10.3%</td></tr><tr><td class="cell-name" title="1725057727">9-100-kit02-chiken-6</td><td>FBO</td><td class="num muted">1 549 ₽</td><td class="num muted">744 ₽</td><td class="num muted">190 ₽</td><td class="num muted">77 ₽</td><td class="num muted">93 ₽</td><td class="num muted">17 ₽</td><td class="num muted">260 ₽</td><td class="num pos">+169 ₽</td><td class="num pos">10.9%</td></tr><tr><td class="cell-name" title="1747584033">9-100-kit01-turkey-6</td><td>FBO</td><td class="num muted">1 673 ₽</td><td class="num muted">803 ₽</td><td class="num muted">190 ₽</td><td class="num muted">84 ₽</td><td class="num muted">100 ₽</td><td class="num muted">19 ₽</td><td class="num muted">300 ₽</td><td class="num pos">+178 ₽</td><td class="num pos">10.6%</td></tr><tr><td class="cell-name" title="814585704">1-100-01-rbt-4</td><td>FBS</td><td class="num muted">1 002 ₽</td><td class="num muted">481 ₽</td><td class="num muted">194 ₽</td><td class="num muted">50 ₽</td><td class="num muted">—</td><td class="num muted">11 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+265 ₽</td><td class="num pos">26.5%</td></tr><tr><td class="cell-name" title="814734869">3-100-01-fish-4</td><td>FBS</td><td class="num muted">1 002 ₽</td><td class="num muted">481 ₽</td><td class="num muted">194 ₽</td><td class="num muted">50 ₽</td><td class="num muted">—</td><td class="num muted">11 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+265 ₽</td><td class="num pos">26.5%</td></tr><tr><td class="cell-name" title="814764800">4-100-01-lamb-4</td><td>FBS</td><td class="num muted">1 002 ₽</td><td class="num muted">481 ₽</td><td class="num muted">194 ₽</td><td class="num muted">50 ₽</td><td class="num muted">—</td><td class="num muted">11 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+265 ₽</td><td class="num pos">26.5%</td></tr><tr><td class="cell-name" title="951415630">7-100-01-turkey-4</td><td>FBS</td><td class="num muted">1 002 ₽</td><td class="num muted">481 ₽</td><td class="num muted">194 ₽</td><td class="num muted">50 ₽</td><td class="num muted">—</td><td class="num muted">11 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+265 ₽</td><td class="num pos">26.5%</td></tr><tr><td class="cell-name" title="951434103">6-100-01-beef-4</td><td>FBS</td><td class="num muted">1 002 ₽</td><td class="num muted">481 ₽</td><td class="num muted">194 ₽</td><td class="num muted">50 ₽</td><td class="num muted">—</td><td class="num muted">11 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+265 ₽</td><td class="num pos">26.5%</td></tr><tr><td class="cell-name" title="814585707">2-100-01-f-ch-4</td><td>FBO</td><td class="num muted">1 002 ₽</td><td class="num muted">481 ₽</td><td class="num muted">190 ₽</td><td class="num muted">50 ₽</td><td class="num muted">—</td><td class="num muted">11 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+270 ₽</td><td class="num pos">27.0%</td></tr><tr><td class="cell-name" title="5473224593">12-100-steril-roast-4</td><td>FBS</td><td class="num muted">1 134 ₽</td><td class="num muted">544 ₽</td><td class="num muted">194 ₽</td><td class="num muted">57 ₽</td><td class="num muted">—</td><td class="num muted">13 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+326 ₽</td><td class="num pos">28.7%</td></tr><tr><td class="cell-name" title="5473224552">13-100-steril-turkey-4</td><td>FBS</td><td class="num muted">1 254 ₽</td><td class="num muted">602 ₽</td><td class="num muted">194 ₽</td><td class="num muted">63 ₽</td><td class="num muted">—</td><td class="num muted">14 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+381 ₽</td><td class="num pos">30.4%</td></tr><tr><td class="cell-name" title="5473223404">9-100-kit01-turkey-4</td><td>FBS</td><td class="num muted">1 265 ₽</td><td class="num muted">607 ₽</td><td class="num muted">194 ₽</td><td class="num muted">63 ₽</td><td class="num muted">—</td><td class="num muted">14 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+386 ₽</td><td class="num pos">30.5%</td></tr><tr><td class="cell-name" title="5473224089">11-100-steril-ragout-4</td><td>FBS</td><td class="num muted">1 265 ₽</td><td class="num muted">607 ₽</td><td class="num muted">194 ₽</td><td class="num muted">63 ₽</td><td class="num muted">—</td><td class="num muted">14 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+386 ₽</td><td class="num pos">30.5%</td></tr><tr><td class="cell-name" title="5473224348">9-100-kit02-chiken-4</td><td>FBS</td><td class="num muted">1 265 ₽</td><td class="num muted">607 ₽</td><td class="num muted">194 ₽</td><td class="num muted">63 ₽</td><td class="num muted">—</td><td class="num muted">14 ₽</td><td class="num muted"><span class="muted" title="нет в справочнике себестоимости">—</span></td><td class="num pos">+386 ₽</td><td class="num pos">30.5%</td></tr></tbody></table><p class="muted" style="margin-top:8px">Показаны 15 худших по марже из 42. Комиссия/логистика — наши данные (API Ozon, ежедневно); реклама — фикс. 5%, налог — из калькулятора владельца, хранение/приёмка/возврат — 1.11% от цены (реальная доля этой категории в начислениях за неделю), себестоимость — из справочника (P7).</p></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Реклама по кампаниям</h2>
+      <span class="muted">эта неделя, отсортировано по расходу</span></div>
+    <div class="panel table-wrap"><table class="data-table"><thead><tr>
+      <th>Кампания</th><th>Тип</th><th>Статус</th><th class="num">Показы</th>
+      <th class="num">Клики</th><th class="num">Расход</th><th class="num">Заказы</th>
+      <th class="num">Продажи в продвижении</th><th class="num">ДРР</th>
+    </tr></thead><tbody><tr><td class="cell-name" title="id 23632034">8 микс реком</td><td>SKU</td><td>CAMPAIGN_STATE_RUNNING</td><td class="num">4513</td><td class="num">197</td><td class="num">3 765 ₽</td><td class="num">8</td><td class="num">31 594 ₽</td><td class="num">11.9%</td></tr><tr><td class="cell-name" title="id 18947772">Миксы 1-4</td><td>SKU</td><td>CAMPAIGN_STATE_RUNNING</td><td class="num">2044</td><td class="num">46</td><td class="num">871 ₽</td><td class="num">8</td><td class="num">32 389 ₽</td><td class="num">2.7%</td></tr><tr><td class="cell-name" title="id 36159962">база для спп</td><td>SKU</td><td>CAMPAIGN_STATE_RUNNING</td><td class="num">1344</td><td class="num">36</td><td class="num">296 ₽</td><td class="num">4</td><td class="num">15 716 ₽</td><td class="num">1.9%</td></tr></tbody></table></div>
+  </section>
+
+  <p class="footnote">
+    Тестовая сборка Д2 (07.09.2026) — статический снимок на момент сборки, не обновляется в реальном времени (D83).
+    ROI/маржа-факт — начисления площадки (mart.finance_daily) минус ОЦЕНКА рекламы (по общему ДРР) и налога (6%) —
+    площадка не удерживает то и другое по SKU, поэтому это не факт, а распределение. «Маржа — план» — отдельно,
+    на сегодняшнюю цену, без фактических скидок/отмен/возвратов этой недели. ДРР «общий» и качество карточки —
+    из последней ручной выгрузки владельца, не ежедневные.
+  </p>
+</div>
